@@ -19,7 +19,7 @@
     v-bind:key="opt"
     class="dropdown__menu-item"
     data-prop="option"
-    value="opt" v-on:click="choseOption(opt)">{{opt}}</li>
+    value="opt" v-on:click="choseOption(item.name, opt)">{{opt}}</li>
   </ul>
 </div>
 </template>
@@ -62,11 +62,12 @@ export default {
         this.isModified = this.value.length > 0;
       }
     },
-    choseOption(val) {
+    choseOption(name, value) {
       this.isModified = true;
       this.isOpened = false;
-      this.value = val;
-      this.$emit('input', val);
+      this.value = value;
+      this.$emit('input', value);
+      this.$emit('changedItemData', { name, value });
     },
   },
 

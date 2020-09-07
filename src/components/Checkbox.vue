@@ -24,6 +24,9 @@ export default {
     updateValue(event) {
       console.log(event.target.checked);
       this.$emit('input', event.target.checked);
+      const { name } = event.target;
+      const val = event.target.checked;
+      this.$emit('changeCheckBoxData', { name, val });
     },
   },
 };

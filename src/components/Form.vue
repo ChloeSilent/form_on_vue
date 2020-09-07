@@ -1,13 +1,25 @@
 <template>
 <form class="form" @submit.prevent="processForm">
   <template v-for="item in fields">
-    <Select v-if="item.options" v-bind:key="item.name" v-bind:item="item" v-model="item.value" />
+    <Select v-if="item.options"
+    v-bind:key="item.name"
+    v-bind:item="item" v-model="item.value"
+    v-on:changedItemData="changeFieldData($event)"
+    />
     <Checkbox
     v-else-if="typeof item.value === 'boolean'"
     :key="item.name"
     v-bind:item="item"
-    v-model="item.value" />
-    <TextInput v-else v-bind:key="item.name" v-bind:item="item" v-model="item.value" />
+    v-model="item.value"
+    v-on:changedItemData="changeCheckBoxData($event)"
+    />
+    <TextInput
+    v-else
+    v-bind:key="item.name"
+    v-bind:item="item"
+    v-model="item.value"
+    v-on:changedItemData="changeFieldData($event)"
+    />
   </template>
   <Button v-on:click="submit(e)" />
 </form>
@@ -231,35 +243,64 @@ export default {
   },
 
   methods: {
+    setErrorMessage(errorField) {
+      let message = '';
+
+      if (this.$v.fields[errorField].value.required === false) {
+        message = errorMessages.required;
+      }
+      if (this.$v.fields[errorField].value.minLength === false) {
+        message = errorMessages.minLength;
+      }
+      this.fields[errorField].errorMessage = message;
+      console.log('Error', message, ' in ', this.fields[errorField].name);
+    },
+    changeCheckBoxData(args) {
+      const { name, val } = args;
+      if (val) {
+        this.fields[name].error = false;
+        this.fields[name].errorMessage = '';
+      }
+    },
+    changeFieldData(args) {
+      const { name, value } = args;
+      if (value.length) {
+        this.fields[name].error = false;
+        this.fields[name].errorMessage = '';
+      }
+
+      this.$v.fields[name].value.$touch();
+      console.log('Submit!', this.$v.fields[name].value);
+      if (this.$v.fields[name].value.$invalid) {
+        this.fields[name].error = true;
+        this.setErrorMessage(name); s;
+      }
+    },
     processForm() {
-      console.log('Submit!', this.$v);
       this.$v.$touch();
-      // если есть хоть какие-то ошибки
+
+      const allValidatedFileds = Object.keys(this.$v.fields.$model);
+
+      const invalidFields = Object.keys(this.$v.fields).filter(
+        (fieldName) => this.$v.fields[fieldName].$invalid,
+      );
+
+      allValidatedFileds.forEach((field) => {
+        if (!invalidFields.includes(field)) {
+          this.fields[field].error = false;
+          this.fields[field].errorMessage = '';
+        }
+      });
+
       if (this.$v.$invalid) {
         this.submitStatus = 'ERROR';
-        const invalidFields = Object.keys(this.$v.fields).filter(
-          (fieldName) => this.$v.fields[fieldName].$invalid,
-        );
-        console.log('invalidFields', invalidFields);
+
         Object.keys(this.fields).forEach((field) => {
-          // console.log('field', this.fields[field].name);
           invalidFields.filter((invalid) => {
             if (invalid === this.fields[field].name) {
-              // console.log('hohohoho', this.fields[field].name);
-              // // TODO: сюда включить поиск какая именно ошибка у этого поля и
-              // // добавить errorMessage
               Object.keys(this.$v.fields).filter((vField) => {
                 if (vField === this.fields[field].name) {
-                  let message = '';
-
-                  if (this.$v.fields[vField].value.required === false) {
-                    message = errorMessages.required;
-                  }
-                  if (this.$v.fields[vField].value.minLength === false) {
-                    message = errorMessages.minLength;
-                  }
-                  this.fields[vField].errorMessage = message;
-                  console.log('Error', message, ' in ', this.fields[field].name);
+                  this.setErrorMessage(vField);
                 }
                 return true;
               });
@@ -272,10 +313,11 @@ export default {
         });
         console.log('ERROR');
       } else {
-        // this.fields.forEach(field => {
-        //   field.error = false;
-        //   field.errorMessage = ''
-        // })
+        Object.keys(this.fields).forEach((field) => {
+          console.log('filed', field);
+          this.fields[field].error = false;
+          this.fields[field].errorMessage = '';
+        });
         console.log('PENDING');
         this.submitStatus = 'PENDING';
         setTimeout(() => {

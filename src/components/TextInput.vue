@@ -1,18 +1,18 @@
 <template>
 <label class="input__label" v-bind:class="{error: item.error}">
   <div class="input__placeholder " v-bind:class="{modified: isModified}" data-prop="placeholder">
-    <span v-if="item.required">*</span>{{item.title}}</div>
+    <span>*</span>{{item.title}}</div>
   <div class="input__err-block">{{item.errorMessage}}</div>
   <input
   class="input__input"
   type="text"
-  v-bind:name="item.name"
+  :name="item.name"
   v-on:click="setModified($event.target.value)"
   v-on:focus="setModified($event.target.value)"
   v-on:change="setModified($event.target.value)"
   v-on:blur="setModified($event.target.value)"
-  v-on:input="updateValue($event.target.value)"
-  v-bind:value="item.value" />
+  v-on:input="updateValue($event)"
+   />
 </label>
 </template>
 
@@ -33,9 +33,12 @@ export default {
     setModified(value) {
       this.isModified = !!value.length;
     },
-    updateValue(value) {
-      this.$emit('input', value);
-      this.setModified(value);
+    updateValue(e) {
+      //  this.$emit('updateFieldValue', [e.target.name, e.target.value]);
+      // console.log('event', e.target.name);
+      this.setModified(e.target.value);
+      this.$emit('input', e.target.value);
+      this.$emit('changedItemData', { name: e.target.name, value: e.target.value });
     },
   },
 
