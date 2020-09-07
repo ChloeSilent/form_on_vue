@@ -43,6 +43,7 @@ export default {
           name: 'secondName',
           title: 'Фамилия',
           error: false,
+          errorMessage: '',
           value: '',
 
         },
@@ -50,6 +51,7 @@ export default {
           name: 'firstName',
           title: 'Имя',
           error: false,
+          errorMessage: '',
           value: '',
         },
         patronymic: {
@@ -61,12 +63,14 @@ export default {
           name: 'birthdate',
           title: 'День рождения',
           error: false,
+          errorMessage: '',
           value: '',
         },
         phone: {
           name: 'phone',
           title: 'Номер телефона',
           error: false,
+          errorMessage: '',
           value: '',
         },
         sex: {
@@ -78,6 +82,7 @@ export default {
           name: 'clientsGroup',
           title: 'Группа клиентов',
           error: false,
+          errorMessage: '',
           value: '',
           options: ['VIP', 'Проблемные', 'ОМС'],
 
@@ -88,35 +93,41 @@ export default {
           value: '',
           options: ['Иванов', 'Захаров', 'Чернышева'],
           error: false,
+          errorMessage: '',
         },
         subscribeSms: {
           name: 'subscribeSms',
           title: 'Не отправлять СМС',
           value: false,
           error: false,
+          errorMessage: '',
         },
         index: {
           name: 'index',
           title: 'Индекс',
           value: '',
           error: false,
+          errorMessage: '',
         },
         country: {
           name: 'country',
           title: 'Страна',
           value: '',
           error: false,
+          errorMessage: '',
         },
         region: {
           name: 'region',
           title: 'Регион',
           value: '',
           error: false,
+          errorMessage: '',
         },
         city: {
           name: 'city',
           title: 'Город',
           error: false,
+          errorMessage: '',
           value: '',
         },
         street: {
@@ -124,17 +135,20 @@ export default {
           title: 'Улица',
           value: '',
           error: false,
+          errorMessage: '',
         },
         house: {
           name: 'house',
           title: 'Дом',
           value: '',
           error: false,
+          errorMessage: '',
         },
         doctype: {
           name: 'doctype',
           title: 'Тип документа',
           error: false,
+          errorMessage: '',
           value: '',
           options: ['Паспорт', 'Свидетельство о рождении', 'Вод. удостоверение'],
         },
@@ -143,24 +157,28 @@ export default {
           title: 'Серия',
           value: '',
           error: false,
+          errorMessage: '',
         },
         docNum: {
           name: 'docNum',
           title: 'Номер',
           value: '',
           error: false,
+          errorMessage: '',
         },
         docBy: {
           name: 'docBy',
           title: 'Кем выдан',
           value: '',
           error: false,
+          errorMessage: '',
         },
         docDate: {
           name: 'docDate',
           title: 'Дата выдачи',
           value: '',
           error: false,
+          errorMessage: '',
         },
       },
     };
@@ -233,12 +251,14 @@ export default {
               Object.keys(this.$v.fields).filter((vField) => {
                 if (vField === this.fields[field].name) {
                   let message = '';
-                  if (this.$v.fields[vField].value.required) {
+
+                  if (this.$v.fields[vField].value.required === false) {
                     message = errorMessages.required;
                   }
-                  if (this.$v.fields[vField].value.minLength) {
+                  if (this.$v.fields[vField].value.minLength === false) {
                     message = errorMessages.minLength;
                   }
+                  this.fields[vField].errorMessage = message;
                   console.log('Error', message, ' in ', this.fields[field].name);
                 }
                 return true;
