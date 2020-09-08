@@ -4,13 +4,22 @@
     <span>*</span>{{item.title}}</div>
   <div class="input__err-block">{{item.errorMessage}}</div>
   <input
+  v-if="item.type === 'date'"
+  type="date"
+  class="input__input"
+  :name="item.name"
+  v-on:click="setModifiedOn($event)"
+  v-on:focus="setModifiedOn($event)"
+  v-on:blur="setModifiedOff($event)"
+  v-on:input="updateValue($event)"
+   />
+  <input v-else
   class="input__input"
   type="text"
   :name="item.name"
-  v-on:click="setModified($event.target.value)"
-  v-on:focus="setModified($event.target.value)"
-  v-on:change="setModified($event.target.value)"
-  v-on:blur="setModified($event.target.value)"
+  v-on:click="setModifiedOn($event)"
+  v-on:focus="setModifiedOn($event)"
+  v-on:blur="setModifiedOff($event)"
   v-on:input="updateValue($event)"
    />
 </label>
@@ -26,19 +35,20 @@ export default {
   },
   data() {
     return {
-      isModified: false,
+      isModified: this.item.type === 'date',
     };
   },
   methods: {
-    setModified(value) {
-      this.isModified = !!value.length;
+    setModifiedOn() {
+      this.isModified = true;
+    },
+    setModifiedOff() {
+      this.isModified = !!this.item.value.length;
     },
     updateValue(e) {
-      //  this.$emit('updateFieldValue', [e.target.name, e.target.value]);
-      // console.log('event', e.target.name);
-      this.setModified(e.target.value);
+      this.setModifiedOn();
       this.$emit('input', e.target.value);
-      this.$emit('changedItemData', { name: e.target.name, value: e.target.value });
+      this.$emit('changedItemData', { name: e.target.name, val: e.target.value });
     },
   },
 
@@ -101,6 +111,21 @@ input[type="text"].input__input {
   position: absolute;
   left: 0;
   bottom: 0;
+}
+
+input[type="date"].input__input {
+  font-size: 16px;
+  width: 100%;
+  height: 58px;
+  padding: 25px 20px 10px 12px;
+  border: none;
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  color: #000000;
+  font-family: Arial;
+  font-weight: normal;
 }
 
 input[type="text"].input__input:focus {

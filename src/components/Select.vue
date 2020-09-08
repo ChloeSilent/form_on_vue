@@ -62,12 +62,12 @@ export default {
         this.isModified = this.value.length > 0;
       }
     },
-    choseOption(name, value) {
+    choseOption(name, val) {
       this.isModified = true;
       this.isOpened = false;
-      this.value = value;
-      this.$emit('input', value);
-      this.$emit('changedItemData', { name, value });
+      this.value = val;
+      this.$emit('input', val);
+      this.$emit('changedItemData', { name, val });
     },
   },
 

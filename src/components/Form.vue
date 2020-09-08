@@ -1,5 +1,6 @@
 <template>
-<form class="form" @submit.prevent="processForm">
+<div>
+  <form class="form" @submit.prevent="processForm">
   <template v-for="item in fields">
     <Select v-if="item.options"
     v-bind:key="item.name"
@@ -11,7 +12,7 @@
     :key="item.name"
     v-bind:item="item"
     v-model="item.value"
-    v-on:changedItemData="changeCheckBoxData($event)"
+    v-on:changedItemData="changeFieldData($event)"
     />
     <TextInput
     v-else
@@ -23,21 +24,30 @@
   </template>
   <Button v-on:click="submit(e)" />
 </form>
+<Modal
+v-on:hideModal="changeModalVisibility($event)"
+v-bind:hidden="modalHidden"
+v-bind:modalStatus="status"/>
+</div>
 </template>
 
 <script>
 import {
-  required, minLength,
+  required, minLength, maxLength, numeric,
 } from 'vuelidate/lib/validators';
 
 import TextInput from './TextInput.vue';
 import Select from './Select.vue';
 import Checkbox from './Checkbox.vue';
 import Button from './Button.vue';
+import Modal from './Modal.vue';
 
 const errorMessages = {
   required: 'Заполните поле',
-  minLength: 'Введено недостаточно символов',
+  minLength: 'Hедостаточно символов',
+  maxLength: 'Не больше чем 11 символов',
+  numeric: 'Введено не число',
+  correctPhone: 'Длина 11 цифр. Начинается с 7',
 };
 
 export default {
@@ -47,6 +57,7 @@ export default {
     Select,
     Checkbox,
     Button,
+    Modal,
   },
   data() {
     return {
@@ -57,7 +68,7 @@ export default {
           error: false,
           errorMessage: '',
           value: '',
-
+          type: 'text',
         },
         firstName: {
           name: 'firstName',
@@ -65,11 +76,15 @@ export default {
           error: false,
           errorMessage: '',
           value: '',
+          type: 'text',
         },
         patronymic: {
           name: 'patronymic',
           title: 'Отчество',
+          error: false,
+          errorMessage: '',
           value: '',
+          type: 'text',
         },
         birthdate: {
           name: 'birthdate',
@@ -77,6 +92,7 @@ export default {
           error: false,
           errorMessage: '',
           value: '',
+          type: 'date',
         },
         phone: {
           name: 'phone',
@@ -84,6 +100,7 @@ export default {
           error: false,
           errorMessage: '',
           value: '',
+          type: 'text',
         },
         sex: {
           name: 'sex',
@@ -102,10 +119,10 @@ export default {
         selectedDoctor: {
           name: 'selectedDoctor',
           title: 'Лечащий врач',
-          value: '',
-          options: ['Иванов', 'Захаров', 'Чернышева'],
           error: false,
           errorMessage: '',
+          value: '',
+          options: ['Иванов', 'Захаров', 'Чернышева'],
         },
         subscribeSms: {
           name: 'subscribeSms',
@@ -120,6 +137,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         country: {
           name: 'country',
@@ -127,6 +145,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         region: {
           name: 'region',
@@ -134,6 +153,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         city: {
           name: 'city',
@@ -141,6 +161,7 @@ export default {
           error: false,
           errorMessage: '',
           value: '',
+          type: 'text',
         },
         street: {
           name: 'street',
@@ -148,6 +169,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         house: {
           name: 'house',
@@ -155,6 +177,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         doctype: {
           name: 'doctype',
@@ -170,6 +193,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         docNum: {
           name: 'docNum',
@@ -177,6 +201,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         docBy: {
           name: 'docBy',
@@ -184,6 +209,7 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'text',
         },
         docDate: {
           name: 'docDate',
@@ -191,8 +217,11 @@ export default {
           value: '',
           error: false,
           errorMessage: '',
+          type: 'date',
         },
       },
+      modalHidden: true,
+      status: '',
     };
   },
   validations: {
@@ -200,7 +229,6 @@ export default {
       secondName: {
         value: {
           required,
-          minLength: minLength(2),
         },
       },
       firstName: {
@@ -236,6 +264,12 @@ export default {
       phone: {
         value: {
           required,
+          minLength: minLength(11),
+          maxLength: maxLength(11),
+          numeric,
+          correctPhone(phoneNumber) {
+            return /^7\d{10}/.test(phoneNumber);
+          },
         },
       },
     },
@@ -243,6 +277,10 @@ export default {
   },
 
   methods: {
+    changeModalVisibility(args) {
+      console.log('modal', args);
+      this.modalHidden = true;
+    },
     setErrorMessage(errorField) {
       let message = '';
 
@@ -252,28 +290,27 @@ export default {
       if (this.$v.fields[errorField].value.minLength === false) {
         message = errorMessages.minLength;
       }
+      if (this.$v.fields[errorField].value.maxLength === false) {
+        message = errorMessages.maxLength;
+      }
+      if (this.$v.fields[errorField].value.correctPhone === false) {
+        message = errorMessages.correctPhone;
+      }
       this.fields[errorField].errorMessage = message;
-      console.log('Error', message, ' in ', this.fields[errorField].name);
     },
-    changeCheckBoxData(args) {
+    changeFieldData(args) {
       const { name, val } = args;
       if (val) {
         this.fields[name].error = false;
         this.fields[name].errorMessage = '';
       }
-    },
-    changeFieldData(args) {
-      const { name, value } = args;
-      if (value.length) {
-        this.fields[name].error = false;
-        this.fields[name].errorMessage = '';
-      }
+      if (this.$v.fields[name]) {
+        this.$v.fields[name].value.$touch();
 
-      this.$v.fields[name].value.$touch();
-      console.log('Submit!', this.$v.fields[name].value);
-      if (this.$v.fields[name].value.$invalid) {
-        this.fields[name].error = true;
-        this.setErrorMessage(name); s;
+        if (this.$v.fields[name].value.$invalid) {
+          this.fields[name].error = true;
+          this.setErrorMessage(name);
+        }
       }
     },
     processForm() {
@@ -312,9 +349,10 @@ export default {
           });
         });
         console.log('ERROR');
+        this.modalHidden = false;
+        this.status = 'Исправьте ошибки';
       } else {
         Object.keys(this.fields).forEach((field) => {
-          console.log('filed', field);
           this.fields[field].error = false;
           this.fields[field].errorMessage = '';
         });
@@ -323,6 +361,8 @@ export default {
         setTimeout(() => {
           this.submitStatus = 'OK';
           console.log('OK');
+          this.modalHidden = false;
+          this.status = 'Ваша заявка принята';
         }, 500);
       }
     },
@@ -332,7 +372,9 @@ export default {
 
 <style>
 .form {
-  width: 400px;
+  min-width: 300px;
+  max-width: 1024px;
+  width: 100%;
   margin: 0 auto;
 }
 </style>
